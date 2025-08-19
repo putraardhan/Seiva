@@ -35,6 +35,7 @@ This project was created for the **DoraHacks x Sei Hackathon** to increase acces
 ---
 
 ## Folder Structure
+```
 seiva/
 │
 ├── seiva-bot/ # Telegram bot code & workflows
@@ -49,7 +50,7 @@ seiva/
 │ └── README.md # Web-specific documentation
 │
 └── README.md # This main file
-
+```
 ---
 
 ## Example Bot Commands
