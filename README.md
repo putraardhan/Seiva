@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Seiva – AI Assistant for Sei Network
 
-## Getting Started
+## Project Description
+**Seiva** is an AI-powered assistant for the Sei Network, consisting of:
+1. **Seiva Bot** – a Telegram bot that helps users track wallets, analyze tokens, and get contextual insights about Sei.
+2. **Seiva Web** – a web-based frontend to showcase Seiva’s features, provide guides, and allow non-Telegram users to explore the Sei ecosystem.
 
-First, run the development server:
+This project was created for the **DoraHacks x Sei Hackathon** to increase accessibility, transparency, and usability of the Sei blockchain ecosystem.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Features
+
+### 🔹 Seiva Bot (Telegram)
+- Track wallet activity on Sei (multi-token support)
+- Ask intelligent questions about Sei with contextual AI responses
+- Token insights: price, volume, holders, historical changes
+- Assistance for airdrops, staking, bridging, and ecosystem guides
+- Built with **n8n**, **OpenAI API**, **DexScreener integration**, and **Sei RPC endpoints**
+
+### 🔹 Seiva Web
+- Frontend dashboard for exploring Sei projects
+- Token & wallet analytics displayed on web
+- Guides and tutorials for Sei users
+- Demo hub for hackathon judges and community
+- Built with **Next.js/React**, styled with TailwindCSS
+
+---
+
+## Demo
+- [Watch the demo video here](https://www.youtube.com/watch?v=AK440aOmV64)  
+- Telegram Bot: [@SeivaBot](https://t.me/sei_vabot)  
+- Web (soon): [seiva-web.vercel.app](https://seiva-web.vercel.app) *(placeholder, update with real link after deploy)*
+
+---
+
+## Folder Structure
 ```
+seiva/
+│
+├── seiva-bot/ # Telegram bot code & workflows
+│ ├── workflows/ # n8n workflow exports
+│ ├── prompts/ # OpenAI system prompts
+│ └── README.md # Bot-specific documentation
+│
+├── seiva-web/ # Frontend web app
+│ ├── pages/ # Next.js pages
+│ ├── components/ # UI components
+│ ├── public/ # Static assets
+│ └── README.md # Web-specific documentation
+│
+└── README.md # This main file
+```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Example Bot Commands
+- `/wallet <address>` → check wallet balance & tokens  
+- `/token <address>` → analyze token details  
+- `/ask <question>` → ask anything about Sei ecosystem  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech Stack
+- **Seiva Bot:** n8n · Telegram Bot API · OpenAI · Sei RPC/REST · DexScreener API  
+- **Seiva Web:** Next.js · React · TailwindCSS · Vercel hosting  
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Socials
+- Telegram: [@SeivaBot](https://t.me/sei_vabot)  
+- Twitter: [@seiva_assistant](https://x.com/seiva_assistant)  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+This project is licensed under the **MIT License**.
