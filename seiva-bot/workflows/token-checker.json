@@ -1,0 +1,438 @@
+{
+  "name": "Seiva Ai Agent copy (token checker)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        140,
+        140
+      ],
+      "id": "ca9301c4-11b2-4df8-82e6-d992194aaec4",
+      "name": "Telegram Trigger",
+      "webhookId": "43686c1b-6b0f-439d-bc52-79345669e554",
+      "credentials": {
+        "telegramApi": {
+          "id": "CYHzP0aIKSZbQucu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.type}}",
+                    "rightValue": "wallet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "57c9acb4-ad5a-4898-ab1b-ad682d1e7d5f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c68b8809-ed4d-4a22-a9a8-8d9d33fb8061",
+                    "leftValue": "={{$json.type}}",
+                    "rightValue": "ask",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "03492a6b-ce4e-4ed8-99be-29d710dda702",
+                    "leftValue": "={{$json.type}}",
+                    "rightValue": "help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e14bde5a-6a63-41e2-bc0d-8ecb11240cbb",
+                    "leftValue": "={{$json.type}}",
+                    "rightValue": "token",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        560,
+        120
+      ],
+      "id": "f911d337-5148-4a25-ab5a-2d098173f43f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = ($json.message?.text || \"\").trim().toLowerCase();\nconst rexTokenCmd = /^token\\s+(0x[a-fA-F0-9]{40})$/;\nconst rexWallet    = /^0x[a-fA-F0-9]{40}$/;\n\nlet type    = \"ask\";\nlet address = null;\n\n// Jika pengguna kirim 'token 0x....'\nif (rexTokenCmd.test(text)) {\n  type    = \"token\";\n  address = text.match(rexTokenCmd)[1];\n}\n// Jika hanya address EVM biasa tanpa 'token'\nelse if (rexWallet.test(text)) {\n  type    = \"wallet\";\n  address = text;\n}\n// Jika /help\nelse if ([\"/help\", \"help\"].includes(text)) {\n  type = \"help\";\n}\n\nelse if ([\"/start\", \"help\"].includes(text)) {\n  type = \"help\";\n}\n\nreturn [{\n  json: {\n    type,\n    address,\n    chat_id: $json.message.chat.id,\n    query: type === \"ask\" ? text : null\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        340,
+        140
+      ],
+      "id": "30570dd2-5a58-4a8f-a369-be656047cbd1",
+      "name": "Classify"
+    },
+    {
+      "parameters": {
+        "jsCode": "const { dex = {}, address, chat_id } = $json;\n\n/* ── 1. Validasi jaringan ───────────────────────────── */\nconst chainId = (dex.chainId || dex.chain || \"\").toString().toLowerCase();\n\nif (!chainId.includes(\"sei\")) {\n  return [{\n    json: {\n      text:\n        \"❌ Sorry, Seiva only supports token analysis on the *Sei Network*.\\n\" +\n        \"The address you provided appears to be on a different chain.\",\n      chat_id,\n      parse_mode: \"Markdown\"\n    }\n  }];\n}\n\n/* ── 2. Helper & format functions ───────────────────── */\nconst fmt = (n, d = 2) => Number(n).toLocaleString(\"id-ID\", {\n  maximumFractionDigits: d,\n  minimumFractionDigits: d,\n});\nconst formatBig = (n) => {\n  const num = Number(n);\n  if (num >= 1e9) return fmt(num / 1e9, 2) + \" B\";\n  if (num >= 1e6) return fmt(num / 1e6, 2) + \" M\";\n  if (num >= 1e3) return fmt(num / 1e3, 2) + \" K\";\n  return fmt(num, 2);\n};\nconst pad = (label, value) => `• ${label.padEnd(13)}: ${value}`;\n\n/* ── 3. Core data ───────────────────────────────────── */\nconst token     = dex.baseToken || {};\nconst name      = token.name   || \"Unknown\";\nconst symbol    = token.symbol || \"\";\nconst contract  = token.address || \"-\";\n\nconst price      = Number(dex.priceUsd || 0);\nconst marketcap  = Number(dex.marketCap || 0);\nconst volume24h  = Number(dex.volume?.h24 || 0);\nconst liquidity  = Number(dex.liquidity?.usd || 0);\n\nlet change1h = dex.priceChangePct?.h1\n            ?? dex.priceChange?.h1\n            ?? dex.delta?.h1\n            ?? 0;\nchange1h = Number(change1h);\nconst changeStr = (change1h > 0 ? \"+\" : \"\") + change1h.toFixed(2) + \"%\";\n\n/* ── 4. Social links ────────────────────────────────── */\nconst socials  = dex.info?.socials  || [];\nconst websites = dex.info?.websites || [];\n\nconst tw  = socials.find(s => s.type?.toLowerCase() === \"twitter\")?.url  || \"-\";\nconst tg  = socials.find(s => s.type?.toLowerCase() === \"telegram\")?.url || \"-\";\nconst web = websites[0]?.url || \"-\";\n\n/* ── 5. Swap link ───────────────────────────────────── */\nconst swapLink = contract !== \"-\"\n  ? `https://dragonswap.app/swap?inputCurrency=SEI&outputCurrency=${contract}`\n  : \"https://dragonswap.app\";\n\n/* ── 6. Build message ───────────────────────────────── */\nconst lines = [\n  pad(\"Price\",       `$${fmt(price, 7)}`),\n  pad(\"Marketcap\",   `$${formatBig(marketcap)}`),\n  pad(\"Change 1h\",   changeStr),\n  pad(\"Volume 24h\",  `$${formatBig(volume24h)}`),\n  pad(\"Liquidity\",   `$${formatBig(liquidity)}`)\n].join(\"\\n\");\n\nconst text =\n`📊 *${name}* (${symbol})\n\\`\\`\\`\n${contract}\n\\`\\`\\`\n${lines}\n\n🌐 *Socials*\n${pad(\"Twitter\",  tw !== \"-\" ? `[Twitter](${tw})`   : \"-\")}\n${pad(\"Telegram\", tg !== \"-\" ? `[Telegram](${tg})` : \"-\")}\n${pad(\"Website\",  web !== \"-\" ? `[Website](${web})` : \"-\")}\n\n🔗 *Swap on DragonSwap:* [Open on DragonSwap](${swapLink})`;\n\n/* ── 7. Return to Telegram ─────────────────────────── */\nreturn [{\n  json: {\n    text,\n    chat_id,\n    parse_mode: \"Markdown\"\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        220
+      ],
+      "id": "8b230c70-b40c-42f9-93af-9d2c92019860",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').all()[0].json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2100,
+        220
+      ],
+      "id": "3c6ccde7-a6c7-47e3-a1fa-d1e08b5f0bbf",
+      "name": "Send a text message3",
+      "webhookId": "be5c62b5-8479-46f5-8590-04989ee12e7f",
+      "credentials": {
+        "telegramApi": {
+          "id": "CYHzP0aIKSZbQucu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.dexscreener.com/latest/dex/tokens/{{ $json.address }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        260
+      ],
+      "id": "231e467b-0887-4e0f-a30d-a61c2e9a65a7",
+      "name": "HTTP B"
+    },
+    {
+      "parameters": {
+        "url": "=https://seitrace.com/token/{{ $json.address }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        100
+      ],
+      "id": "b0b766bd-3d23-437f-b8db-e6450ac6d2f0",
+      "name": "HTTP A"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{\n  (() => {\n    const meta = $items(\"HTTP A\", 0)[0]?.json ?? {};\n    const dex  = $items(\"HTTP B\", 0)[0]?.json?.pairs?.[0] ?? {};\n    return {\n      meta,\n      dex,\n      address: $json.address,\n      chat_id: $json.chat_id\n    };\n  })()\n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        220
+      ],
+      "id": "a03aaa9c-b93b-41dc-8255-57995f0414d4",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1160,
+        220
+      ],
+      "id": "be689edf-5fa3-47a8-bdf8-2f2fd9f8de76",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=You are a professional token analyst for the Sei Network. The following token data has just been extracted from the blockchain and DEX APIs:\n\n{{ $json.text }}\n\nBased on this information, provide a short and objective insight about the token’s on-chain condition. Use clear and concise English. Structure your response in 2–3 sentences.\n\nFocus only on what can be inferred from the data: price movement, liquidity, volume, marketcap, and social presence. Avoid speculation. Mention both positive and concerning aspects, if any.\n\nEnd your insight with a gentle reminder: \"This is not financial advice. Always DYOR.\"\n\nKeep the tone neutral and professional.\n\nIf the data looks too incomplete to assess, say so clearly and politely.\n\nRULE: You should mention the token data {{ $json.text }} first without changing the format of the previous node output and then continue with your analysis in a different paragraph."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        220
+      ],
+      "id": "a9fae608-2072-4ddf-a45b-57bb61e08691",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1700,
+        420
+      ],
+      "id": "52fbccc0-5e66-4aac-89f1-02cfbb0a5cf5",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "NMLBzEarXbDJfD93",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1920,
+        440
+      ],
+      "id": "3ed69f3f-3b1e-4566-a669-1f961303c4ce",
+      "name": "Simple Memory1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Classify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        [],
+        [],
+        [
+          {
+            "node": "HTTP B",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP B": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP A": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "52f50bb8-bdce-4d94-9e2f-c29ffff0f8b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "30f9e2bc0c2d215c362a29b88c6a83cfde3883f4f3b9df9537abde7bc19781a9"
+  },
+  "id": "mnMDShJqwl9rIAUw",
+  "tags": []
+}
