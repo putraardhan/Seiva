@@ -1,22 +1,22 @@
 "use client";
+
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type Message = { id: string; role: "user" | "assistant"; content: string; ts: number };
 export type ChatSession = { id: string; title: string; createdAt: number; updatedAt: number; messages: Message[] };
 
-type Store = {
+type ChatStore = {
   sessions: ChatSession[];
   activeId: string | null;
-  walletAddr?: string | null;
-  createSession: (title?: string) => string;
+  activeSession: ChatSession | null;
   setActive: (id: string) => void;
-  addMessage: (id: string, msg: Message) => void;
-  renameActiveIfEmpty: (proposed: string) => void;
+  createSession: () => string;
   deleteSession: (id: string) => void;
+  addMessage: (sessionId: string, msg: Message) => void;
+  updateSessionTitle: (sessionId: string, title: string) => void;
+  walletAddr: string | null;
   setWalletAddr: (addr: string | null) => void;
 };
-
-const Ctx = createContext<Store | null>(null);
 
 const LS_SESS = "seiva:sessions";
 const LS_ACTIVE = "seiva:active";
@@ -24,77 +24,95 @@ const LS_WALLET = "seiva:wallet";
 
 function load<T>(k: string, def: T): T {
   if (typeof window === "undefined") return def;
-  try { const s = localStorage.getItem(k); return s ? (JSON.parse(s) as T) : def; } catch { return def; }
+  try {
+    const s = localStorage.getItem(k);
+    return s ? (JSON.parse(s) as T) : def;
+  } catch {
+    return def;
+  }
 }
-function save(k: string, v: any) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+function save(k: string, v: unknown) {
+  try {
+    localStorage.setItem(k, JSON.stringify(v));
+  } catch {}
+}
+
+const Ctx = createContext<ChatStore | null>(null);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
-  const [sessions, setSessions] = useState<ChatSession[]>(() => load(LS_SESS, []));
-  const [activeId, setActiveId] = useState<string | null>(() => load(LS_ACTIVE, null));
-  const [walletAddr, setWalletAddr] = useState<string | null>(() => load(LS_WALLET, null));
+  const [sessions, setSessions] = useState<ChatSession[]>(() => load<ChatSession[]>(LS_SESS, []));
+  const [activeId, setActiveId] = useState<string | null>(() => load<string | null>(LS_ACTIVE, null));
+  const [walletAddr, setWalletAddr] = useState<string | null>(() => load<string | null>(LS_WALLET, null));
 
-  // buat 1 sesi awal jika kosong
+  // pastikan minimal 1 session
   useEffect(() => {
     if (!sessions.length) {
       const id = crypto.randomUUID();
       const now = Date.now();
-      const s: ChatSession = { id, title: "New chat", createdAt: now, updatedAt: now, messages: [] };
-      setSessions([s]); setActiveId(id);
+      const first: ChatSession = { id, title: "New chat", createdAt: now, updatedAt: now, messages: [] };
+      setSessions([first]);
+      setActiveId(id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sessions.length]);
 
+  const activeSession = useMemo(
+    () => sessions.find((s) => s.id === activeId) ?? null,
+    [sessions, activeId]
+  );
+
+  function setActive(id: string) {
+    setActiveId(id);
+  }
+
+  function createSession() {
+    const id = crypto.randomUUID();
+    const now = Date.now();
+    const s: ChatSession = { id, title: "New chat", createdAt: now, updatedAt: now, messages: [] };
+    setSessions((prev) => [s, ...prev]);
+    setActiveId(id);
+    return id;
+  }
+
+  function deleteSession(id: string) {
+    setSessions((prev) => prev.filter((x) => x.id !== id));
+    setActiveId((curr) => (curr === id ? (sessions.find((x) => x.id !== id)?.id ?? null) : curr));
+  }
+
+  function addMessage(sessionId: string, msg: Message) {
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id !== sessionId
+          ? s
+          : { ...s, updatedAt: msg.ts, messages: [...s.messages, msg] }
+      )
+    );
+  }
+
+  function updateSessionTitle(sessionId: string, title: string) {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, title } : s))
+    );
+  }
+
+  // persist
   useEffect(() => save(LS_SESS, sessions), [sessions]);
   useEffect(() => save(LS_ACTIVE, activeId), [activeId]);
   useEffect(() => save(LS_WALLET, walletAddr), [walletAddr]);
 
-  const api: Store = {
-    sessions, activeId, walletAddr,
-    setWalletAddr: (addr) => setWalletAddr(addr),
-
-    createSession: (title = "New chat") => {
-      const id = crypto.randomUUID();
-      const now = Date.now();
-      const s: ChatSession = { id, title, createdAt: now, updatedAt: now, messages: [] };
-      setSessions(prev => [s, ...prev]);
-      setActiveId(id);
-      return id;
-    },
-
-    setActive: (id) => setActiveId(id),
-
-    addMessage: (id, msg) => {
-      setSessions(prev =>
-        prev.map(s => s.id === id
-          ? { ...s, updatedAt: Date.now(), messages: [...s.messages, msg] }
-          : s
-        )
-      );
-    },
-
-    renameActiveIfEmpty: (proposed) => {
-      const clean = (proposed || "").trim().replace(/\s+/g, " ");
-      if (!clean) return;
-      setSessions(prev =>
-        prev.map(s => {
-          if (s.id !== activeId) return s;
-          if (s.title && s.title !== "New chat") return s;
-          const title = clean.length > 60 ? clean.slice(0, 57) + "…" : clean;
-          return { ...s, title };
-        })
-      );
-    },
-
-    deleteSession: (id) => {
-      setSessions(prev => {
-        const next = prev.filter(s => s.id !== id);
-        setActiveId(curr => (curr === id ? (next[0]?.id ?? null) : curr));
-        return next;
-      });
-    },
+  const value: ChatStore = {
+    sessions,
+    activeId,
+    activeSession,
+    setActive,
+    createSession,
+    deleteSession,
+    addMessage,
+    updateSessionTitle,
+    walletAddr,
+    setWalletAddr,
   };
 
-  return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useChatStore() {
