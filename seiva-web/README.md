@@ -1,76 +1,81 @@
-# Seiva – AI Assistant for Sei Network
+# Seiva Web – Frontend for Sei Network AI Assistant
 
-## Project Description
-**Seiva** is an AI-powered assistant for the Sei Network, consisting of:
-1. **Seiva Bot** – a Telegram bot that helps users track wallets, analyze tokens, and get contextual insights about Sei.
-2. **Seiva Web** – a web-based frontend to showcase Seiva’s features, provide guides, and allow non-Telegram users to explore the Sei ecosystem.
+## Overview
+**Seiva Web** is the web-based frontend of the Seiva project.  
+It provides a clean UI for exploring Sei tokens, wallets, and ecosystem projects, and acts as a demo hub for the DoraHacks x Sei Hackathon submission.
 
-This project was created for the **DoraHacks x Sei Hackathon** to increase accessibility, transparency, and usability of the Sei blockchain ecosystem.
+This app is built with **Next.js (App Router)**, **React**, and styled using **TailwindCSS**. It communicates with **n8n backend APIs** to fetch on-chain data.
 
 ---
 
 ## Features
-
-### 🔹 Seiva Bot (Telegram)
-- Track wallet activity on Sei (multi-token support)
-- Ask intelligent questions about Sei with contextual AI responses
-- Token insights: price, volume, holders, historical changes
-- Assistance for airdrops, staking, bridging, and ecosystem guides
-- Built with **n8n**, **OpenAI API**, **DexScreener integration**, and **Sei RPC endpoints**
-
-### 🔹 Seiva Web
-- Frontend dashboard for exploring Sei projects
-- Token & wallet analytics displayed on web
-- Guides and tutorials for Sei users
-- Demo hub for hackathon judges and community
-- Built with **Next.js/React**, styled with TailwindCSS
+- 📊 Token & wallet analytics displayed in web UI
+- 🔎 Search and filter for Sei ecosystem projects
+- 📘 Guides and tutorials for Sei users
+- 🌐 Public demo hub (for users without Telegram)
 
 ---
 
-## Demo
-- [Watch the demo video here](https://www.youtube.com/watch?v=AK440aOmV64)  
-- Telegram Bot: [@SeivaBot](https://t.me/sei_vabot)  
-- Web (soon): [seiva-web.vercel.app](https://seiva-web.vercel.app) *(placeholder, update with real link after deploy)*
+## Getting Started
+
+### 1. Clone and Install
+git clone https://github.com/putraardhan/Seiva.git  
+cd Seiva/seiva-web  
+npm install  
+
+### 2. Run Locally
+npm run dev  
+App will be available at: http://localhost:3000
+
+---
+
+## Environment Variables
+Create a `.env.local` file in `seiva-web/` with:
+
+N8N_WEBHOOK_URL=https://<your-n8n-host>/webhook/seiva-web  
+NEXT_PUBLIC_APP_URL=https://seiva-web.vercel.app  
+
+⚠️ Do **not** commit `.env.local` to GitHub. Instead, create a safe `.env.example` to show required keys.
+
+---
+
+## Build for Production
+npm run build  
+npm run start  
+
+---
+
+## Deployment
+Seiva Web is deployed using **Vercel**.  
+When importing the repo to Vercel:
+- Set **Root Directory** → `seiva-web/`
+- Build Command → `next build`
+- Output Directory → `.next`
+- Add Environment Variables in Vercel dashboard
 
 ---
 
 ## Folder Structure
 ```
-seiva/
-│
-├── seiva-bot/ # Telegram bot code & workflows
-│ ├── workflows/ # n8n workflow exports
-│ ├── prompts/ # OpenAI system prompts
-│ └── README.md # Bot-specific documentation
-│
-├── seiva-web/ # Frontend web app
-│ ├── pages/ # Next.js pages
-│ ├── components/ # UI components
-│ ├── public/ # Static assets
-│ └── README.md # Web-specific documentation
-│
-└── README.md # This main file
+seiva-web/  
+├── app/              # Next.js App Router pages  
+├── components/       # UI components  
+├── public/           # Static assets  
+├── styles/           # Tailwind/global CSS  
+├── package.json  
+├── tsconfig.json  
+├── tailwind.config.cjs  
+└── ...
 ```
 ---
 
-## Example Bot Commands
-- `/wallet <address>` → check wallet balance & tokens  
-- `/token <address>` → analyze token details  
-- `/ask <question>` → ask anything about Sei ecosystem  
-
----
-
 ## Tech Stack
-- **Seiva Bot:** n8n · Telegram Bot API · OpenAI · Sei RPC/REST · DexScreener API  
-- **Seiva Web:** Next.js · React · TailwindCSS · Vercel hosting  
-
----
-
-## Socials
-- Telegram: [@SeivaBot](https://t.me/sei_vabot)  
-- Twitter: [@seiva_assistant](https://x.com/seiva_assistant)  
+- Next.js · React · TailwindCSS  
+- Vercel (hosting)  
+- n8n (backend API)  
+- Sei RPC / REST endpoints  
 
 ---
 
 ## License
-This project is licensed under the **MIT License**.
+MIT License
