@@ -59,7 +59,7 @@ export default function HomePage() {
         {!hasChatted && (
           <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
             <h1 className="text-center text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
-              SEIVA, <span className="text-[#DB3975]">YOU SEI ANALYST</span>
+              SEIVA, <span className="text-[#DB3975]">YOUR SEI ANALYST</span>
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-neutral-600">
               Navigate Sei with an On-Chain AI
