@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Normalisasi respons dari n8n
+    // Normalisasi respons dari n8n (string atau object)
     let reply = raw;
     try {
       const data = JSON.parse(raw) as unknown;
