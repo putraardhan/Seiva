@@ -133,7 +133,7 @@ export default function Sidebar({
           href="https://x.com/seiva_assistant" target="_blank" rel="noopener noreferrer"
           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
         >
-          Twitter
+          X/Twitter
         </a>
       </div>
     </aside>
