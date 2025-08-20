@@ -1,4 +1,5 @@
 "use client";
+
 import { useChatStore } from "@/components/chat/ChatProvider";
 
 type ChatMsg = { role: "user" | "assistant"; content: unknown };
@@ -24,11 +25,11 @@ function deriveTitle(s: { title: string; messages: ChatMsg[] }) {
 export default function Sidebar({
   className = "",
   onNavigate,
-  forceVisible = false,   // ⬅️ baru
+  forceVisible = false, // tampil paksa (untuk drawer mobile)
 }: {
   className?: string;
   onNavigate?: () => void;
-  forceVisible?: boolean; // ⬅️ baru
+  forceVisible?: boolean;
 }) {
   const {
     sessions, activeId, setActive, createSession, deleteSession,
@@ -55,7 +56,7 @@ export default function Sidebar({
   }
 
   return (
-    // kalau TIDAK forceVisible → hidden di mobile, tampil di md+
+    // default: hidden di mobile, tampil di md+. Kalau forceVisible → tampil juga di mobile (drawer).
     <aside
       className={cn(
         forceVisible ? "flex" : "hidden md:flex",
@@ -63,6 +64,7 @@ export default function Sidebar({
         className
       )}
     >
+      {/* Header */}
       <div className="p-3 flex items-center justify-between">
         <div className="font-semibold">Chat history</div>
         <button
@@ -73,6 +75,7 @@ export default function Sidebar({
         </button>
       </div>
 
+      {/* List chat */}
       <div className="flex-1 overflow-auto px-2">
         {sessions.map((s) => (
           <div
@@ -99,6 +102,7 @@ export default function Sidebar({
         )}
       </div>
 
+      {/* Wallet */}
       <div className="px-3 py-2 border-t space-y-2">
         <div className="text-xs font-medium text-neutral-600">Login with wallet</div>
         {walletAddr ? (
@@ -107,17 +111,30 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="flex gap-2">
-            <button onClick={connectMetaMask} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">MetaMask</button>
-            <button onClick={connectKeplr} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">Keplr</button>
+            <button onClick={connectMetaMask} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">
+              MetaMask
+            </button>
+            <button onClick={connectKeplr} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">
+              Keplr
+            </button>
           </div>
         )}
       </div>
 
+      {/* Sosmed */}
       <div className="px-3 py-3 border-t flex gap-2">
-        <a href="https://t.me/sei_vabot" target="_blank" rel="noopener noreferrer"
-           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50">Telegram</a>
-        <a href="https://twitter.com/your_handle" target="_blank" rel="noopener noreferrer"
-           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50">Twitter</a>
+        <a
+          href="https://t.me/sei_vabot" target="_blank" rel="noopener noreferrer"
+          className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
+        >
+          Telegram
+        </a>
+        <a
+          href="https://twitter.com/your_handle" target="_blank" rel="noopener noreferrer"
+          className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
+        >
+          Twitter
+        </a>
       </div>
     </aside>
   );
