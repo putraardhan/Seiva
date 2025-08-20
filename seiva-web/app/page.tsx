@@ -17,27 +17,27 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Sidebar DESKTOP only */}
-      <div className="hidden md:block fixed left-0 top-0 h-screen z-10">
+      {/* Sidebar DESKTOP (fixed) */}
+      <div className="fixed left-0 top-0 h-screen z-10">
+        {/* Sidebar sendiri akan hidden di mobile (hidden md:flex) */}
         <Sidebar />
       </div>
 
-      {/* Sidebar as DRAWER on MOBILE */}
+      {/* Drawer MOBILE */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-[85vw] max-w-xs bg-white shadow-xl">
-            <Sidebar onNavigate={() => setMobileOpen(false)} />
+            <Sidebar forceVisible onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>
       )}
 
-      {/* Main content — geser hanya di md+ */}
+      {/* Main: geser hanya di md+ */}
       <main className="relative z-0 md:ml-80 h-dvh flex flex-col overflow-y-auto bg-white">
-        {/* Header */}
         <header className="sticky top-0 z-20 border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-            {/* tombol menu untuk mobile */}
+            {/* tombol menu (mobile) */}
             <button
               className="md:hidden -ml-2 mr-1 inline-flex h-9 w-9 items-center justify-center rounded hover:bg-neutral-100"
               aria-label="Open sidebar"
@@ -55,7 +55,6 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* Hero */}
         {!hasChatted && (
           <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
             <h1 className="text-center text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
@@ -67,7 +66,6 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Chat column */}
         <div className="mx-auto w-full max-w-3xl flex-1 px-3 sm:px-4 pb-6">
           <Chat />
         </div>
