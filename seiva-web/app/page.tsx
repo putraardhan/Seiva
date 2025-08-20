@@ -32,36 +32,30 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Main: geser hanya di md+ biar muat di mobile */}
+      {/* Main: hanya geser di md+ */}
       <main className="relative z-0 md:ml-80 h-dvh flex flex-col overflow-y-auto bg-white">
         {/* Header */}
         <header className="sticky top-0 z-20 border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-            {/* Button menu untuk mobile */}
+            {/* Tombol menu (mobile) */}
             <button
               className="md:hidden -ml-2 mr-1 inline-flex h-9 w-9 items-center justify-center rounded hover:bg-neutral-100"
               aria-label="Open sidebar"
               onClick={() => setMobileOpen(true)}
             >
-              {/* icon hamburger sederhana */}
-              <svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
             </button>
 
             <div className="flex items-center gap-2">
-              <Image
-                src="/logo-seiva.png"
-                alt="Seiva"
-                width={24}
-                height={24}
-                className="rounded-full"
-                priority
-              />
+              <Image src="/logo-seiva.png" alt="Seiva" width={24} height={24} className="rounded-full" priority />
               <span className="font-semibold tracking-wide">Seiva</span>
             </div>
           </div>
         </header>
 
-        {/* Hero (hilang setelah pesan pertama) */}
+        {/* Hero */}
         {!hasChatted && (
           <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
             <h1 className="text-center text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
@@ -73,7 +67,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Chat column */}
+        {/* Chat */}
         <div className="mx-auto w-full max-w-3xl flex-1 px-3 sm:px-4 pb-6">
           <Chat />
         </div>
