@@ -1,10 +1,10 @@
 "use client";
 import { useChatStore } from "@/components/chat/ChatProvider";
+import clsx from "clsx";
 
 function short(addr: string) {
   return addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr;
 }
-
 function deriveTitle(s: { title: string; messages: any[] }) {
   if (s.title && s.title !== "New chat") return s.title;
   const firstUser = s.messages?.find((m: any) => m.role === "user");
@@ -13,7 +13,13 @@ function deriveTitle(s: { title: string; messages: any[] }) {
   return t.length > 40 ? t.slice(0, 37) + "…" : t || "New chat";
 }
 
-export default function Sidebar() {
+export default function Sidebar({
+  className = "",
+  onNavigate,
+}: {
+  className?: string;
+  onNavigate?: () => void; // dipanggil saat user pindah sesi / new chat (buat nutup drawer mobile)
+}) {
   const {
     sessions, activeId, setActive, createSession, deleteSession,
     walletAddr, setWalletAddr,
@@ -27,7 +33,6 @@ export default function Sidebar() {
       setWalletAddr(accs?.[0] ?? null);
     } catch {}
   }
-
   async function connectKeplr() {
     const w = globalThis as any;
     if (!w?.keplr) { window.open("https://www.keplr.app/download", "_blank"); return; }
@@ -39,11 +44,11 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-80 fixed left-0 top-0 h-screen border-r bg-white z-10 flex flex-col">
+    <aside className={clsx("h-full w-80 border-r bg-white flex flex-col", className)}>
       <div className="p-3 flex items-center justify-between">
         <div className="font-semibold">Chat history</div>
         <button
-          onClick={() => createSession()}
+          onClick={() => { createSession(); onNavigate?.(); }}
           className="text-sm rounded border px-2 py-1 hover:bg-neutral-50"
         >
           New chat
@@ -57,7 +62,7 @@ export default function Sidebar() {
             className={`group flex items-center justify-between gap-2 px-3 py-2 rounded cursor-pointer ${
               s.id === activeId ? "bg-neutral-100" : "hover:bg-neutral-50"
             }`}
-            onClick={() => setActive(s.id)}
+            onClick={() => { setActive(s.id); onNavigate?.(); }}
             title={new Date(s.updatedAt).toLocaleString()}
           >
             <div className="truncate text-sm">{deriveTitle(s)}</div>
@@ -75,7 +80,6 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* Wallet connect */}
       <div className="px-3 py-2 border-t space-y-2">
         <div className="text-xs font-medium text-neutral-600">Login with wallet</div>
         {walletAddr ? (
@@ -84,36 +88,21 @@ export default function Sidebar() {
           </div>
         ) : (
           <div className="flex gap-2">
-            <button
-              onClick={connectMetaMask}
-              className="text-xs rounded border px-2 py-1 hover:bg-neutral-50"
-            >
-              MetaMask
-            </button>
-            <button
-              onClick={connectKeplr}
-              className="text-xs rounded border px-2 py-1 hover:bg-neutral-50"
-            >
-              Keplr
-            </button>
+            <button onClick={connectMetaMask} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">MetaMask</button>
+            <button onClick={connectKeplr} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">Keplr</button>
           </div>
         )}
       </div>
 
-      {/* Social buttons */}
       <div className="px-3 py-3 border-t flex gap-2">
         <a
-          href="https://t.me/sei_vabot"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://t.me/sei_vabot" target="_blank" rel="noopener noreferrer"
           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
         >
           Telegram
         </a>
         <a
-          href="https://twitter.com/seiva_assistant"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://twitter.com/your_handle" target="_blank" rel="noopener noreferrer"
           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
         >
           Twitter
