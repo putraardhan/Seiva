@@ -8,13 +8,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Payload = { message?: string; sessionId?: string };
-type Buttons = unknown;
-type UpstreamObj = {
-  reply?: unknown;
-  message?: unknown;
-  text?: unknown;
-  buttons?: Buttons;
-} & Record<string, unknown>;
 
 export async function POST(req: Request) {
   try {
@@ -23,31 +16,53 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30_000);
-
-    const upstream = await fetch(WEBHOOK_URL, {
+    const r = await fetch(WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, sessionId }),
-      signal: controller.signal,
       cache: "no-store",
-    }).finally(() => clearTimeout(timeoutId));
+    });
 
-    const raw = await upstream.text();
+    const raw = await r.text();
 
-    if (!upstream.ok) {
+    if (!r.ok) {
       return NextResponse.json(
-        { error: "n8n error", status: upstream.status, body: raw },
+        { error: "n8n error", status: r.status, body: raw },
         { status: 502 }
       );
     }
 
-    let reply = "Maaf, ada gangguan. Coba lagi ya.";
-    let buttons: Buttons | undefined;
-
+    // Normalisasi respons dari n8n
+    let reply = raw;
     try {
       const data = JSON.parse(raw) as unknown;
       if (typeof data === "string") {
         reply = data;
-      } else if (data &&
+      } else if (data && typeof data === "object") {
+        const obj = data as Record<string, unknown>;
+        reply =
+          (typeof obj.reply === "string" && obj.reply) ||
+          (typeof obj.message === "string" && obj.message) ||
+          (typeof obj.text === "string" && obj.text) ||
+          raw;
+      }
+    } catch {
+      // raw bukan JSON → pakai apa adanya
+    }
+
+    return NextResponse.json({ reply });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return NextResponse.json({ error: "Upstream timeout" }, { status: 504 });
+    }
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: "Server error", detail: msg }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    target: WEBHOOK_URL ? "configured" : "missing",
+  });
+}
