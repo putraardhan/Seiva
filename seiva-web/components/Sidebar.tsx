@@ -130,7 +130,7 @@ export default function Sidebar({
           Telegram
         </a>
         <a
-          href="https://twitter.com/your_handle" target="_blank" rel="noopener noreferrer"
+          href="https://x.com/seiva_assistant" target="_blank" rel="noopener noreferrer"
           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
         >
           Twitter
