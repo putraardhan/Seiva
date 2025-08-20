@@ -17,9 +17,8 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Sidebar DESKTOP (fixed) */}
+      {/* Sidebar DESKTOP (fixed). Komponen Sidebar hidden di <md, jadi aman untuk mobile */}
       <div className="fixed left-0 top-0 h-screen z-10">
-        {/* Sidebar sendiri akan hidden di mobile (hidden md:flex) */}
         <Sidebar />
       </div>
 
@@ -35,6 +34,7 @@ export default function HomePage() {
 
       {/* Main: geser hanya di md+ */}
       <main className="relative z-0 md:ml-80 h-dvh flex flex-col overflow-y-auto bg-white">
+        {/* Header */}
         <header className="sticky top-0 z-20 border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
             {/* tombol menu (mobile) */}
@@ -55,6 +55,7 @@ export default function HomePage() {
           </div>
         </header>
 
+        {/* Hero */}
         {!hasChatted && (
           <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
             <h1 className="text-center text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
@@ -66,6 +67,7 @@ export default function HomePage() {
           </section>
         )}
 
+        {/* Chat */}
         <div className="mx-auto w-full max-w-3xl flex-1 px-3 sm:px-4 pb-6">
           <Chat />
         </div>
