@@ -1,10 +1,3 @@
-"use client";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useChatStore } from "@/components/chat/ChatProvider";
-
-type Role = "user" | "assistant";
-const ACCENT = "#DB3975";
-
 export function Chat() {
   const { sessions, activeId, addMessage, renameActiveIfEmpty } = useChatStore();
   const active = useMemo(() => sessions.find(s => s.id === activeId) ?? null, [sessions, activeId]);
