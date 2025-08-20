@@ -6,7 +6,6 @@ type EthereumProvider = { request: (args: { method: string }) => Promise<string[
 type KeplrKey = { bech32Address: string };
 type KeplrProvider = { enable: (chainId: string) => Promise<void>; getKey: (chainId: string) => Promise<KeplrKey> };
 
-// helper pengganti clsx
 function cn(...xs: Array<string | undefined | null | false>) {
   return xs.filter(Boolean).join(" ");
 }
@@ -25,9 +24,11 @@ function deriveTitle(s: { title: string; messages: ChatMsg[] }) {
 export default function Sidebar({
   className = "",
   onNavigate,
+  forceVisible = false,   // ⬅️ baru
 }: {
   className?: string;
-  onNavigate?: () => void; // dipanggil saat klik item/baru → untuk nutup drawer mobile
+  onNavigate?: () => void;
+  forceVisible?: boolean; // ⬅️ baru
 }) {
   const {
     sessions, activeId, setActive, createSession, deleteSession,
@@ -40,7 +41,7 @@ export default function Sidebar({
     try {
       const accs = await eth.request({ method: "eth_requestAccounts" });
       setWalletAddr(accs?.[0] ?? null);
-    } catch { /* ignore */ }
+    } catch {}
   }
 
   async function connectKeplr() {
@@ -50,13 +51,18 @@ export default function Sidebar({
       await w.keplr.enable("pacific-1");
       const key = await w.keplr.getKey("pacific-1");
       setWalletAddr(key?.bech32Address ?? null);
-    } catch { /* ignore */ }
+    } catch {}
   }
 
   return (
-    // ❗️TIDAK fixed di sini. Fixed/Drawer diatur dari page.tsx
-    <aside className={cn("h-full w-80 border-r bg-white flex flex-col", className)}>
-      {/* Header */}
+    // kalau TIDAK forceVisible → hidden di mobile, tampil di md+
+    <aside
+      className={cn(
+        forceVisible ? "flex" : "hidden md:flex",
+        "h-full w-80 border-r bg-white flex-col",
+        className
+      )}
+    >
       <div className="p-3 flex items-center justify-between">
         <div className="font-semibold">Chat history</div>
         <button
@@ -67,7 +73,6 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* List riwayat */}
       <div className="flex-1 overflow-auto px-2">
         {sessions.map((s) => (
           <div
@@ -94,7 +99,6 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Login wallet */}
       <div className="px-3 py-2 border-t space-y-2">
         <div className="text-xs font-medium text-neutral-600">Login with wallet</div>
         {walletAddr ? (
@@ -103,30 +107,17 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="flex gap-2">
-            <button onClick={connectMetaMask} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">
-              MetaMask
-            </button>
-            <button onClick={connectKeplr} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">
-              Keplr
-            </button>
+            <button onClick={connectMetaMask} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">MetaMask</button>
+            <button onClick={connectKeplr} className="text-xs rounded border px-2 py-1 hover:bg-neutral-50">Keplr</button>
           </div>
         )}
       </div>
 
-      {/* Sosmed */}
       <div className="px-3 py-3 border-t flex gap-2">
-        <a
-          href="https://t.me/sei_vabot" target="_blank" rel="noopener noreferrer"
-          className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
-        >
-          Telegram
-        </a>
-        <a
-          href="https://twitter.com/your_handle" target="_blank" rel="noopener noreferrer"
-          className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50"
-        >
-          Twitter
-        </a>
+        <a href="https://t.me/sei_vabot" target="_blank" rel="noopener noreferrer"
+           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50">Telegram</a>
+        <a href="https://twitter.com/your_handle" target="_blank" rel="noopener noreferrer"
+           className="flex-1 text-center text-sm rounded border px-3 py-2 hover:bg-neutral-50">Twitter</a>
       </div>
     </aside>
   );
