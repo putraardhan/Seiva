@@ -1,35 +1,51 @@
-# Seiva – Telegram AI Assistant for Sei Network
+# Seiva – AI Assistant for Sei Network
 
 ## What We Built
 
-**Seiva** is a Telegram-based AI assistant designed specifically for the Sei Network. It brings an intuitive user experience that combines on-chain monitoring and AI interaction, making Sei more accessible for both beginners and degen users.
+**Seiva** is an AI-powered assistant built for the Sei Network, combining **Telegram Bot**, **Web App**, and **Backend APIs**.  
+It delivers a smooth user experience that blends **on-chain monitoring** with **AI-driven interaction**, making Sei more accessible for new users and more powerful for degens.
 
-Users can:
-- Track wallet activity on Sei (with support for multiple tokens)
-- Analyze token insights (price, volume, holders, 24h change)
-- Ask AI-powered questions about Sei
-- Get help related to airdrops, staking, and bridging
+### Features
+- 🔹 **Seiva Bot (Telegram)**
+  - Track wallet activity (multi-token support)
+  - Token insights: price, volume, holders, 24h changes
+  - Ask contextual AI questions about Sei
+  - Guides for airdrops, staking, and bridging
+- 🔹 **Seiva Web**
+  - Dashboard to explore Sei tokens and projects
+  - Token & wallet analytics on the web
+  - Guides/tutorials for Sei ecosystem
+- 🔹 **Seiva Backend (n8n)**
+  - Exposes REST APIs for token/wallet/project data
+  - Powers both the Telegram bot and web frontend
 
-The system is powered by n8n, OpenAI, CoinGecko API, and Sei RPC endpoints. All interaction happens seamlessly via Telegram.
+Powered by **n8n**, **OpenAI GPT**, **CoinGecko API**, **DexScreener**, and **Sei RPC/REST endpoints**.
 
-## Built for Sei
+---
+
+## Built for DoraHacks x Sei Hackathon
 
 Seiva was created specifically for the **DoraHacks x Sei Hackathon** with the goal to:
-- Make Sei’s ecosystem easier to explore for new users
-- Increase transparency of wallet/token data
-- Deliver on-chain insights in a conversational format
+- 📈 Make Sei’s ecosystem easy to explore
+- 🔍 Increase transparency of wallet & token data
+- 🤖 Deliver on-chain insights in a conversational & visual format
+
+---
 
 ## Hackathon Track Fit
 
-This project aligns with the **AI Agent + Automation track** and **On-Chain Data**:
-- Uses OpenAI GPT via n8n as a smart AI layer
-- Real-time on-chain data from Sei RPC and REST
-- Automates contextual responses and token insights
-- Deployed as a Telegram bot for wide accessibility
+- **AI Agent + Automation**
+  - Uses OpenAI GPT via n8n to provide intelligent, contextual responses
+- **On-Chain Data**
+  - Real-time wallet and token data from Sei RPC/REST
+  - Automation flows for analytics and insights
+
+---
 
 ## Links
 
-- GitHub: [Seiva Repository](https://github.com/putraardhan/seiva-bot)
-- Demo Video: [link to video demo](https://youtu.be/AK440aOmV64)
-- Telegram Bot: [@SeivaBot](https://t.me/sei_vabot)
-- Twitter: [@seiva_assistant](https://x.com/seiva_assistant)
+- 🔗 GitHub: [Seiva Repository](https://github.com/putraardhan/Seiva)  
+- ▶️ Demo Video: [YouTube Demo](https://youtu.be/AK440aOmV64)  
+- 🤖 Telegram Bot: [@SeivaBot](https://t.me/sei_vabot)  
+- 🌐 Web Demo: [seiva-web.vercel.app](https://seiva.vercel.app/)
+- 🐦 Twitter: [@seiva_assistant](https://x.com/seiva_assistant)  
