@@ -17,12 +17,12 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Sidebar desktop (fixed) */}
+      {/* Sidebar DESKTOP only */}
       <div className="hidden md:block fixed left-0 top-0 h-screen z-10">
         <Sidebar />
       </div>
 
-      {/* Drawer mobile */}
+      {/* Sidebar as DRAWER on MOBILE */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
@@ -32,12 +32,12 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Main: hanya geser di md+ */}
+      {/* Main content — geser hanya di md+ */}
       <main className="relative z-0 md:ml-80 h-dvh flex flex-col overflow-y-auto bg-white">
         {/* Header */}
         <header className="sticky top-0 z-20 border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-            {/* Tombol menu (mobile) */}
+            {/* tombol menu untuk mobile */}
             <button
               className="md:hidden -ml-2 mr-1 inline-flex h-9 w-9 items-center justify-center rounded hover:bg-neutral-100"
               aria-label="Open sidebar"
@@ -67,7 +67,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Chat */}
+        {/* Chat column */}
         <div className="mx-auto w-full max-w-3xl flex-1 px-3 sm:px-4 pb-6">
           <Chat />
         </div>
