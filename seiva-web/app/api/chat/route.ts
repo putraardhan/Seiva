@@ -1,4 +1,3 @@
-// app/api/chat/route.ts
 import { NextResponse } from "next/server";
 
 const WEBHOOK_URL =
@@ -8,23 +7,24 @@ const WEBHOOK_URL =
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type N8nResponse = {
-  reply?: string;
-  message?: string;
-  text?: string;
-  buttons?: unknown;
-  [k: string]: unknown;
-};
+type Payload = { message?: string; sessionId?: string };
+type Buttons = unknown;
+type UpstreamObj = {
+  reply?: unknown;
+  message?: unknown;
+  text?: unknown;
+  buttons?: Buttons;
+} & Record<string, unknown>;
 
 export async function POST(req: Request) {
   try {
-    const { message, sessionId } = (await req.json()) as { message?: string; sessionId?: string };
-    if (!message || typeof message !== "string") {
+    const { message, sessionId } = (await req.json()) as Payload;
+    if (typeof message !== "string" || !message.trim()) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
     const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 30_000);
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
     const upstream = await fetch(WEBHOOK_URL, {
       method: "POST",
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({ message, sessionId }),
       signal: controller.signal,
       cache: "no-store",
-    }).finally(() => clearTimeout(t));
+    }).finally(() => clearTimeout(timeoutId));
 
     const raw = await upstream.text();
 
@@ -43,26 +43,11 @@ export async function POST(req: Request) {
       );
     }
 
-    let data: unknown;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      data = raw;
-    }
-
     let reply = "Maaf, ada gangguan. Coba lagi ya.";
-    let buttons: unknown;
+    let buttons: Buttons | undefined;
 
-    if (typeof data === "string") {
-      reply = data;
-    } else if (data && typeof data === "object") {
-      const d = data as Record<string, unknown>;
-      reply =
-        (typeof d.reply === "string" && d.reply) ||
-        (typeof d.message === "string" && d.message) ||
-        (typeof d.text === "string" && d.text) ||
-        reply;
-      buttons = d.buttons;
-    }
-
-    return NextResponse.json({ reply
+    try {
+      const data = JSON.parse(raw) as unknown;
+      if (typeof data === "string") {
+        reply = data;
+      } else if (data &&
