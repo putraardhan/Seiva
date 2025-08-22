@@ -1,78 +1,62 @@
+// app/api/chat/route.ts
 import { NextResponse } from "next/server";
 
-const WEBHOOK_URL = process.env.N8N_WEBHOOK_URL; // tanpa fallback hardcode
+// Pakai ENV kalau diset, kalau tidak fallback ke production URL yang kamu kasih
+const WEBHOOK_URL =
+  process.env.N8N_WEBHOOK_URL ??
+  "https://seiva45.app.n8n.cloud/webhook/b771261a-300a-433b-8410-ce334b523b40";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Payload = { message?: string; sessionId?: string };
-
-function missingEnvResponse() {
-  return NextResponse.json(
-    { error: "Server misconfigured: N8N_WEBHOOK_URL is not set" },
-    { status: 500 }
-  );
-}
-
 export async function POST(req: Request) {
-  if (!WEBHOOK_URL) return missingEnvResponse();
-
   try {
-    const { message, sessionId } = (await req.json()) as Payload;
+    const { message, sessionId } = await req.json();
 
-    if (typeof message !== "string" || !message.trim()) {
+    if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
+    // Timeout guard (30s)
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20_000);
+    const t = setTimeout(() => controller.abort(), 30_000);
 
-    const r = await fetch(WEBHOOK_URL, {
+    const upstream = await fetch(WEBHOOK_URL, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, sessionId }),
-      cache: "no-store",
       signal: controller.signal,
-    }).finally(() => clearTimeout(timeout));
+      cache: "no-store",
+    }).finally(() => clearTimeout(t));
 
-    const raw = await r.text();
+    const raw = await upstream.text();
 
-    if (!r.ok) {
+    if (!upstream.ok) {
+      // teruskan error dari n8n biar gampang debug
       return NextResponse.json(
-        { error: "n8n error", status: r.status, body: raw || null },
+        { error: "n8n error", status: upstream.status, body: raw },
         { status: 502 }
       );
     }
 
-    let reply = raw;
-    try {
-      const data = JSON.parse(raw) as unknown;
-      if (typeof data === "string") reply = data;
-      else if (data && typeof data === "object") {
-        const obj = data as Record<string, unknown>;
-        reply =
-          (typeof obj.reply === "string" && obj.reply) ||
-          (typeof obj.message === "string" && obj.message) ||
-          (typeof obj.text === "string" && obj.text) ||
-          raw;
-      }
-    } catch {
-      // raw bukan JSON → pakai apa adanya
-    }
+    // Normalisasi respons n8n: { reply, buttons? }
+    let data: any;
+    try { data = JSON.parse(raw); } catch { data = { reply: raw }; }
 
-    return NextResponse.json({ reply });
-  } catch (err: unknown) {
-    if (err instanceof Error && err.name === "AbortError") {
+    const reply =
+      data?.reply ?? data?.message ?? data?.text ?? "Maaf, ada gangguan. Coba lagi ya.";
+    const buttons = data?.buttons;
+
+    return NextResponse.json({ reply, ...(buttons ? { buttons } : {}) });
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
       return NextResponse.json({ error: "Upstream timeout" }, { status: 504 });
     }
-    const msg = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: "Server error", detail: msg }, { status: 500 });
+    return NextResponse.json({ error: "Server error", detail: String(err?.message ?? err) }, { status: 500 });
   }
 }
 
+// Health check sederhana
 export async function GET() {
-  if (!WEBHOOK_URL) return missingEnvResponse();
-
-  const masked = WEBHOOK_URL.replace(/^https?:\/\//, "").replace(/\/webhook\/.*/, "/webhook/…");
-  return NextResponse.json({ ok: true, target: masked });
+  return NextResponse.json({ ok: true, target: WEBHOOK_URL ? "configured" : "missing" });
 }
