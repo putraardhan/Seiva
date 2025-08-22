@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const WEBHOOK_URL = process.env.N8N_WEBHOOK_URL; // ← ambil dari ENV saja (tanpa fallback)
+const WEBHOOK_URL = process.env.N8N_WEBHOOK_URL; // tanpa fallback hardcode
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,9 +24,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    // Timeout fetch biar gak nunggu lama kalau n8n lambat/ down
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20_000); // 20s
+    const timeout = setTimeout(() => controller.abort(), 20_000);
 
     const r = await fetch(WEBHOOK_URL, {
       method: "POST",
@@ -39,20 +38,17 @@ export async function POST(req: Request) {
     const raw = await r.text();
 
     if (!r.ok) {
-      // forward info error dari n8n, tapi tetap 502 agar jelas upstream error
       return NextResponse.json(
         { error: "n8n error", status: r.status, body: raw || null },
         { status: 502 }
       );
     }
 
-    // Normalisasi respons dari n8n: string | { reply | message | text }
     let reply = raw;
     try {
       const data = JSON.parse(raw) as unknown;
-      if (typeof data === "string") {
-        reply = data;
-      } else if (data && typeof data === "object") {
+      if (typeof data === "string") reply = data;
+      else if (data && typeof data === "object") {
         const obj = data as Record<string, unknown>;
         reply =
           (typeof obj.reply === "string" && obj.reply) ||
@@ -77,10 +73,6 @@ export async function POST(req: Request) {
 export async function GET() {
   if (!WEBHOOK_URL) return missingEnvResponse();
 
-  // Masking id webhook agar tidak bocor di response
-  const masked =
-    WEBHOOK_URL.replace(/^https?:\/\//, "")
-      .replace(/\/webhook\/.*/, "/webhook/…");
-
+  const masked = WEBHOOK_URL.replace(/^https?:\/\//, "").replace(/\/webhook\/.*/, "/webhook/…");
   return NextResponse.json({ ok: true, target: masked });
 }
