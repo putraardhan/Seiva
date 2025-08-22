@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const WEBHOOK_URL =
-  process.env.N8N_WEBHOOK_URL;
+  process.env.N8N_WEBHOOK_URL ?? "";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
