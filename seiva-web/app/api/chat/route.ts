@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const WEBHOOK_URL =
-  process.env.N8N_WEBHOOK_URL ?? "";
+  process.env.N8N_WEBHOOK_URL ?? "https://jaki.app.n8n.cloud/webhook/77c58b6b-9356-4b80-9c8e-44625fcba17a";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
